@@ -1,18 +1,31 @@
 const express = require("express")
-
+const mongoose = require("mongoose")
+const users = require("./users")
 const app = express()
 
-const users = [
-    { id: 0, name: "User 0" },
-    { id: 2, name: "User 1" },
-    { id: 2, name: "User 2" },
-    { id: 3, name: "User 3" },
-    { id: 4, name: "User 4" },
-    { id: 5, name: "User 5" },
-    { id: 6, name: "User 6" },
-    { id: 7, name: "User 7" },
-    { id: 8, name: "User 8" }
-]
+const User = require("./users")
+
+mongoose.connect("mongodb://localhost/pagination")
+const db = mongoose.connection
+db.once("open", async() => {
+    // if there are no new users we return 
+    if(await User.countDocuments().exec() > 0) return 
+
+    Promise.all([
+        User.create({name: "User 1"}),
+        User.create({name: "User 2"}),
+        User.create({name: "User 3"}),
+        User.create({name: "User 4"}),
+        User.create({name: "User 5"}),
+        User.create({name: "User 6"}),
+        User.create({name: "User 7"}),
+        User.create({name: "User 8"}),
+        User.create({name: "User 10"}),
+        User.create({name: "User 11"}),
+        User.create({name: "User 12"}),
+    ]).then(() => console.log("Users Added"))
+})
+
 
 app.get("/users", (req, res) => {
     const page = req.query.page
@@ -22,10 +35,8 @@ app.get("/users", (req, res) => {
     const endIndex = page * limit
 
     const usersPerPage = users.slice(startIndex, endIndex)
-    res.json(usersPerPage)
+    usersPerPage.usersPerPage = model.find().limit(limit).skip(startIndex).exec()
 
-    
-    
 })
 
 
